@@ -6,140 +6,139 @@
 <meta name="robots" content="noindex,nofollow">
 <title>casa Point 集計</title>
 <style>
+/* 見た目は casa POS に合わせる（オーナー指定 2026-11-24）: 濃い青の帯・白いカード・細い線・明るい画面のみ */
 :root{
-  --bg1:#e9eefb;--bg2:#f6eef7;--bg3:#e6f4f1;
-  --glass:rgba(255,255,255,.62);--glass-strong:rgba(255,255,255,.82);--edge:rgba(255,255,255,.9);
-  --line:rgba(60,60,67,.14);--text:#1c1c1e;--sub:#5b5b63;
-  --accent:#0068d6;--on-accent:#fff;--orange:#b45300;--gray:#5b5b63;--red:#c4271b;--green:#1a7f37;
-  --shadow:0 10px 30px rgba(30,40,80,.12);--solid:#f7f8fc;
+  --bg:#f4f7fb;--card:#fff;--line:#d7e0ec;--line2:#e8eef6;--text:#12233d;--sub:#5b708f;
+  --accent:#1f6feb;--accent2:#e8f0fe;--accentD:#134fa8;--on-accent:#fff;
+  --ok:#0f7b40;--warn:#c2410c;--bad:#c62828;--badbg:#fdeaea;--in:#fffbea;--auto:#eef2f7;--r:14px;
 }
-@media (prefers-color-scheme:dark){:root{
-  --bg1:#10131c;--bg2:#1a1420;--bg3:#0f1b1c;
-  --glass:rgba(44,44,50,.6);--glass-strong:rgba(54,54,60,.86);--edge:rgba(255,255,255,.14);
-  --line:rgba(255,255,255,.14);--text:#f2f2f7;--sub:#aeaeb6;
-  --accent:#4da3ff;--on-accent:#00172e;--orange:#ffb04d;--gray:#aeaeb6;--red:#ff6b61;--green:#4cd16b;
-  --shadow:0 10px 30px rgba(0,0,0,.45);--solid:#26262b;
-}}
-*{box-sizing:border-box}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;min-height:100%}
-body{
-  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic UI",sans-serif;
-  color:var(--text);font-size:15px;line-height:1.4;
-  background:radial-gradient(900px 600px at 10% 0%,var(--bg1),transparent 70%),
-             radial-gradient(900px 700px at 100% 10%,var(--bg2),transparent 70%),var(--bg3);
-  background-attachment:fixed;-webkit-text-size-adjust:100%;
-}
-.wrap{max-width:1100px;margin:0 auto;padding:16px 16px 48px}
-.glass{background:var(--glass);border:1px solid var(--edge);border-radius:22px;box-shadow:var(--shadow);
-  -webkit-backdrop-filter:blur(24px) saturate(1.6);backdrop-filter:blur(24px) saturate(1.6)}
-header{display:flex;align-items:center;gap:12px;padding:12px 16px;margin-bottom:12px}
-h1{font-size:18px;margin:0;font-weight:700;letter-spacing:.01em}
-.sync{font-size:12px;color:var(--sub);margin-left:auto;text-align:right}
+body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;
+  color:var(--text);background:var(--bg);font-size:15px;line-height:1.5;-webkit-text-size-adjust:100%}
 button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
-.icon-btn{min-width:44px;height:44px;border-radius:22px;background:var(--glass-strong);border:1px solid var(--edge);
-  display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:0 12px;position:relative;white-space:nowrap}
+button:focus-visible,input:focus-visible,.scroll:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+header button:focus-visible{outline-color:#fff}
+
+/* 帯 */
+header{position:sticky;top:0;z-index:5;background:var(--accentD);color:#fff;display:flex;align-items:center;gap:8px;
+  padding:5px 12px;padding-top:calc(5px + env(safe-area-inset-top,0px))}
+.ttl{flex:1;min-width:0}
+h1{font-size:15px;margin:0;font-weight:700;line-height:1.3;white-space:nowrap}
+.sync{font-size:12.5px;line-height:1.3;white-space:nowrap}
+.icon-btn{min-width:44px;height:44px;border-radius:9px;background:rgba(255,255,255,.16);color:#fff;
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:0 11px;white-space:nowrap;font-weight:600;font-size:13px}
+.icon-btn:active{background:rgba(255,255,255,.3)}
 .icon-btn svg{width:20px;height:20px}
-.badge{font-size:11px;font-weight:700;color:var(--orange)}
-.panel{padding:12px;margin-bottom:12px;display:grid;gap:10px}
-.chips{display:flex;gap:8px;flex-wrap:wrap}
-.chip{min-height:44px;padding:0 16px;border-radius:22px;background:var(--glass-strong);border:1px solid var(--edge);font-weight:600;white-space:nowrap}
-.chip[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);border-color:transparent}
-.range{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.badge{background:#f5b301;color:#2b1d00;border-radius:6px;padding:1px 6px;font-size:12px;font-weight:800}
+
+.wrap{max-width:1180px;margin:0 auto;padding:12px 12px 40px}
+.glass{background:var(--card);border:1px solid var(--line);border-radius:var(--r)}
+.panel{padding:12px;margin-bottom:10px;display:grid;gap:8px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{min-height:44px;padding:7px 14px;border-radius:99px;background:var(--card);border:1px solid var(--line);
+  font-weight:600;font-size:14px;white-space:nowrap;display:inline-flex;align-items:center;justify-content:center}
+.chip:active{background:var(--accent2)}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.range{display:flex;align-items:end;gap:8px;flex-wrap:wrap}
 .range[hidden]{display:none}
-input[type=date],input[type=time]{font:inherit;color:var(--text);min-height:44px;padding:0 12px;border-radius:14px;
-  border:1px solid var(--line);background:var(--glass-strong);color-scheme:light dark}
-.period-label{font-size:13px;color:var(--sub)}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:12px}
-.card{padding:14px 16px}
-.card .k{font-size:12px;color:var(--sub);font-weight:600;display:flex;align-items:center;gap:6px}
-.dot{width:8px;height:8px;border-radius:50%;background:var(--gray);flex:none}
-.card .v{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:4px;word-break:break-all}
-.card .s{font-size:12px;color:var(--sub);font-variant-numeric:tabular-nums}
-.t-save{color:var(--accent)}.t-use{color:var(--orange)}
-.d-save{background:var(--accent)}.d-use{background:var(--orange)}
+.range label,.srow label{display:grid;gap:3px;font-size:12.5px;color:var(--sub);font-weight:700}
+.range .tilde{padding-bottom:10px;color:var(--sub)}
+input[type=date],input[type=time]{font:inherit;color:var(--text);min-height:44px;padding:0 10px;border-radius:11px;
+  border:1px solid var(--line);background:var(--in);color-scheme:light}
+.period-label{font-size:12.5px;color:var(--sub)}
+
+.warn{padding:10px 12px;margin-bottom:10px;color:#8b1e1e;font-weight:700;background:var(--badbg);border-color:#e8a5a5}
+.more[hidden],.state[hidden],.warn[hidden]{display:none}
+
+/* 数字のカード */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:10px}
+.card{padding:10px 14px}
+.card .k{font-size:12.5px;color:var(--sub);font-weight:700;display:flex;align-items:center;gap:6px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--sub);flex:none}
+.card .v{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.3;word-break:break-all}
+.card .s{font-size:12.5px;color:var(--sub);font-variant-numeric:tabular-nums}
+.t-save{color:var(--accentD)}.t-use{color:var(--warn)}
+.d-save{background:var(--accent)}.d-use{background:var(--warn)}
+.card.wide .row{display:flex;gap:18px;align-items:baseline;flex-wrap:wrap}
+.card.wide .v small{font-size:13px;font-weight:700;color:var(--sub);margin-left:2px}
+.neg{color:var(--bad)}.pos{color:var(--ok)}
+
+/* 表 */
 .tablebox{padding:12px}
 .tabs{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
 .tabs .sp{flex:1}
-.csv{min-height:44px;padding:0 18px;border-radius:22px;background:var(--accent);color:var(--on-accent);font-weight:700;
+.csv{min-height:44px;padding:0 16px;border-radius:11px;background:var(--accent);color:#fff;font-weight:700;font-size:14px;
   display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
+.csv:active{background:var(--accentD)}
+.csv:disabled{background:#dfe7f2;color:#3f5474}
 .csv svg{width:18px;height:18px}
-.scroll{overflow:auto;max-height:70vh;border-radius:14px;border:1px solid var(--line);background:var(--solid)}
-table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
-th,td{padding:10px 12px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line)}
-th{position:sticky;top:0;background:var(--solid);font-size:12px;color:var(--sub);font-weight:700;z-index:1;
-}
-th.l,td.l{text-align:left}
-td.memo{white-space:normal;min-width:180px;max-width:320px;text-align:left;color:var(--sub);font-size:13px}
-tr.total td{font-weight:700;border-top:2px solid var(--line);border-bottom:0}
-.neg{color:var(--red)}.pos{color:var(--green)}
-.empty{padding:36px 12px;text-align:center;color:var(--sub)}
-.more{display:block;width:100%;min-height:44px;margin-top:10px;border-radius:14px;background:var(--glass-strong);border:1px solid var(--edge);font-weight:600}
-
-.more[hidden],.state[hidden],.warn[hidden]{display:none}
-.warn{padding:12px 16px;margin-bottom:12px;color:var(--red);font-weight:700;border-color:var(--red)}
-button:focus-visible,input:focus-visible,.scroll:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
-.card.wide .row{display:flex;gap:18px;align-items:baseline;flex-wrap:wrap}
-.card.wide .v small{font-size:13px;font-weight:600;color:var(--sub);margin-left:2px}
-.scrollwrap{position:relative}
-.hint{position:absolute;right:1px;top:1px;bottom:1px;width:44px;border-radius:0 14px 14px 0;pointer-events:none;
-  display:flex;align-items:center;justify-content:flex-end;padding-right:8px;font-size:22px;font-weight:700;color:var(--sub);
-  background:linear-gradient(90deg,transparent,var(--solid) 70%)}
+.scroll{overflow:auto;max-height:70vh;border-radius:11px;border:1px solid var(--line);background:var(--card)}
+.hint{font-size:12.5px;font-weight:700;color:var(--accentD);text-align:right;margin:-4px 2px 6px}
 .hint[hidden]{display:none}
-th:first-child,td:first-child{position:sticky;left:0;background:var(--solid);z-index:1}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:14px}
+th,td{padding:10px 12px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line2);background:var(--card)}
+th{position:sticky;top:0;z-index:2;background:var(--auto);font-size:12.5px;color:var(--sub);font-weight:700;border-bottom:1px solid var(--line)}
+th.l,td.l{text-align:left}
+th:first-child,td:first-child{position:sticky;left:0;z-index:1;font-weight:700}
 th:first-child{z-index:3}
-th{z-index:2}
-.range label{display:grid;gap:4px;font-size:11px;color:var(--sub);font-weight:600}
-.snote{font-size:12px;color:var(--sub);margin:10px 0 0}
-
+tbody tr:nth-child(even) td{background:#f8fafd}
+td.memo{white-space:normal;min-width:180px;max-width:320px;text-align:left;color:var(--sub);font-size:13px}
+tbody tr.total td{font-weight:800;background:var(--accent2);border-top:2px solid var(--line);border-bottom:0}
+.empty{padding:36px 12px;text-align:center;color:var(--sub)}
+.more{display:block;width:100%;min-height:44px;margin-top:10px;border-radius:11px;background:var(--card);border:1px solid var(--line);font-weight:700;font-size:14px}
 .state{padding:48px 16px;text-align:center;color:var(--sub)}
 .state b{display:block;color:var(--text);font-size:16px;margin-bottom:6px}
-/* 設定 */
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.28);display:flex;align-items:flex-end;justify-content:center;padding:16px;z-index:10}
+
+/* 営業時間 */
+.overlay{position:fixed;inset:0;background:rgba(18,35,61,.45);display:flex;align-items:flex-end;justify-content:center;padding:12px;z-index:10}
 .overlay[hidden]{display:none}
-.sheet{width:100%;max-width:520px;max-height:90vh;overflow:auto;padding:18px;background:var(--glass-strong)}
+.sheet{width:100%;max-width:520px;max-height:90vh;overflow:auto;padding:16px}
 @media (min-width:700px){.overlay{align-items:center}}
-.sheet h2{font-size:17px;margin:0 0 4px}
-.sheet .note{font-size:13px;color:var(--sub);margin:0 0 12px}
-.srow{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:end;padding:10px 0;border-top:1px solid var(--line)}
-.srow .name{font-weight:700;align-self:center}
-.srow .cut{grid-column:1/-1;font-size:12px;color:var(--sub)}
-.srow label{font-size:11px;color:var(--sub);display:grid;gap:4px;font-weight:600}
+.sheet h2{font-size:17px;margin:0 0 2px}
+.sheet .note,.snote{font-size:13px;color:var(--sub);margin:0 0 10px}
+.snote{margin:10px 0 0;background:var(--in);border:1px solid #ecd9a8;border-radius:11px;padding:8px 10px;color:var(--text);font-weight:700}
+.sconf{margin:10px 0 0;background:var(--accent2);border:1px solid #b5cdf3;border-radius:11px;padding:8px 10px;font-weight:700}
+.sconf[hidden]{display:none}
+.sconf div{font-variant-numeric:tabular-nums}
+.srow{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:end;padding:10px 0;border-top:1px dashed var(--line)}
+.srow .name{font-weight:800;font-size:16px;align-self:center}
+.srow .cut{grid-column:1/-1;font-size:12.5px;color:var(--sub)}
 .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
-.btn{min-height:44px;padding:0 20px;border-radius:22px;font-weight:700;background:var(--glass);border:1px solid var(--line)}
-.btn.primary{background:var(--accent);color:var(--on-accent);border-color:transparent}
-.btn[disabled]{opacity:.5}
-.err{color:var(--red);font-size:13px;margin-top:8px;min-height:1em}
+.btn{min-height:48px;padding:0 20px;border-radius:11px;font-weight:700;font-size:15px;background:var(--card);border:1px solid var(--line)}
+.btn:active{background:var(--line2)}
+.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn.primary:active{background:var(--accentD)}
+.btn[disabled]{background:#dfe7f2;border-color:var(--line);color:#3f5474}
+.err{color:var(--bad);font-size:13px;margin-top:8px;min-height:1em;font-weight:700}
+
 @media (max-width:520px){
-  .wrap{padding:12px 12px 40px}
-  .card{padding:10px 14px}
-  .card .v{font-size:20px;margin-top:2px}
-  .cards{grid-template-columns:repeat(2,1fr);gap:8px}
+  .wrap{padding:10px 10px 40px}
+  .card .v{font-size:20px}
+  .cards{grid-template-columns:repeat(2,1fr)}
   .card.wide{grid-column:1/-1}
   .range{display:grid;grid-template-columns:1fr 1fr}
   .range .tilde{display:none}
   .range input{width:100%}
-  .csv{min-height:44px}
   th,td{padding:9px 10px}
-  h1{font-size:16px;white-space:nowrap}
-  .sync{font-size:11px;white-space:nowrap}
-  header{gap:8px;padding:10px 12px}
 }
-@media (prefers-reduced-transparency:reduce){.glass{-webkit-backdrop-filter:none;backdrop-filter:none;background:var(--glass-strong)}}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header class="glass">
+<header>
+  <div class="ttl">
     <h1>casa Point 集計</h1>
     <div class="sync" id="sync"></div>
-    <button class="icon-btn" id="reload" aria-label="最新にする" title="最新にする">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 6.3"/><path d="M20 4v7h-7"/></svg>
-    </button>
-    <button class="icon-btn" id="gear" aria-label="営業時間の設定" title="営業時間の設定">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
-      <span class="badge" id="kari" hidden>仮</span>
-    </button>
-  </header>
+  </div>
+  <button class="icon-btn" id="reload" aria-label="最新にする" title="最新にする">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 6.3"/><path d="M20 4v7h-7"/></svg>
+  </button>
+  <button class="icon-btn" id="gear" aria-label="営業時間の設定" title="営業時間の設定">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+    営業時間<span class="badge" id="kari" hidden>仮</span>
+  </button>
+</header>
+<div class="wrap">
 
   <div id="loading" class="glass state"><b>読み込み中</b></div>
 
@@ -166,7 +165,8 @@ th{z-index:2}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"/><path d="m7 11 5 5 5-5"/><path d="M5 20h14"/></svg>CSV
         </button>
       </div>
-      <div class="scrollwrap"><div class="scroll" id="scroll" tabindex="0" aria-label="集計の表（横にスクロールできます）"><table id="table"></table></div><div class="hint" id="hint" hidden aria-hidden="true">›</div></div>
+      <div class="hint" id="hint" hidden aria-hidden="true">横にスクロール →</div>
+      <div class="scroll" id="scroll" tabindex="0" aria-label="集計の表（横にスクロールできます）"><table id="table"></table></div>
       <button class="more" id="more" hidden></button>
     </section>
   </main>
@@ -178,6 +178,7 @@ th{z-index:2}
     <p class="note">閉店から次の開店までの真ん中で、営業日を切り替えます。</p>
     <div id="srows"></div>
     <p class="snote">保存すると、過去の集計にもこの時間が使われます。</p>
+    <div class="sconf" id="sconf" role="alert" hidden></div>
     <div class="err" id="serr" role="alert"></div>
     <div class="actions">
       <button class="btn" id="scancel">閉じる</button>
@@ -191,7 +192,9 @@ th{z-index:2}
 'use strict';
 var API_URL='https://script.google.com/macros/s/AKfycbyZvSXiegJGumalqTbZnA326goaTWqLxi2FeXjS7jZNMCy23LIqT8lLtYPUxONBbv10/exec';
 var EXCLUDE_STORES=['開発テスト'];
-var KNOWN_TYPES=['ためる','つかう','調整'];
+// 元データの種別を画面・CSVでの呼び名に直す（オーナー指定 2026-11-24: ためる＝付与、つかう＝使用）
+var TYPE_LABEL={'ためる':'付与','つかう':'使用'};
+var KNOWN_TYPES=['付与','使用','調整'];
 var PERIODS=[['today','今日'],['yesterday','昨日'],['week','今週'],['month','今月'],['lastMonth','先月'],['all','全期間'],['custom','期間指定']];
 var TABS=[['day','日別'],['store','店舗別'],['member','会員別'],['detail','明細']];
 var PAGE=300;
@@ -226,7 +229,7 @@ function build(){
     // 日時かチップ数が読めない行は、集計に入れず画面に知らせる
     if(!m||isNaN(num(r[5]))||+m[2]<1||+m[2]>12||+m[3]<1||+m[3]>31||+m[4]>23||+m[5]>59){S.bad.push(r[1]?'取引ID '+r[1]:(i+2)+'行目');return;}
     if(!r[7]||EXCLUDE_STORES.indexOf(r[7])>=0)return;   // 集計に入れない店舗（オーナー指定 2026-11-24）
-    S.recs.push({dt:r[0],id:r[1],uid:r[2],nick:r[3],type:r[4]||'その他',amt:num(r[5]),bal:isNaN(num(r[6]))?'':num(r[6]),
+    S.recs.push({dt:r[0],id:r[1],uid:r[2],nick:r[3],type:TYPE_LABEL[r[4]]||r[4]||'その他',amt:num(r[5]),bal:isNaN(num(r[6]))?'':num(r[6]),
       store:r[7],dev:r[8]||'',memo:r[9]||'',
       biz:bizDate(+m[1],+m[2],+m[3],(+m[4])*60+(+m[5]),r[7]),
       sort:m[1]+('0'+m[2]).slice(-2)+('0'+m[3]).slice(-2)+('0'+m[4]).slice(-2)+m[5]+('0'+(m[6]||'0')).slice(-2)+('0000000000'+(r[1]||'')).slice(-10)});
@@ -340,7 +343,7 @@ function render(){
   $('warn').hidden=!S.bad.length;
   if(S.bad.length)$('warn').textContent='読めない行が'+S.bad.length+'件あり、集計に入っていません（'+S.bad.slice(0,5).join('、')+(S.bad.length>5?' ほか':'')+'）';
   $('sync').textContent='';
-  if(S.synced){$('sync').appendChild(el('span','', '同期 '));$('sync').appendChild(document.createTextNode(S.synced.replace(/^\d{4}\//,'').replace(/:\d{2}$/,'')));}
+  if(S.synced){$('sync').appendChild(el('span','', '最終同期 '));$('sync').appendChild(document.createTextNode(S.synced.replace(/^\d{4}\//,'').replace(/:\d{2}$/,'')));}
 
   var v=S.view=makeView(),cards=$('cards');cards.textContent='';
   function card(label,value,sub,cls,dot){
@@ -352,9 +355,9 @@ function render(){
   v.types.forEach(function(t){
     var n=v.tot.sum[t]||0,cnt=v.list.filter(function(r){return r.type===t;}).length;
     if(KNOWN_TYPES.indexOf(t)<0&&!cnt)return;
-    card(t,t==='ためる'?nf(n):signed(n),cnt+'件',t==='ためる'?'t-save':(t==='つかう'?'t-use':''),t==='ためる'?'d-save':(t==='つかう'?'d-use':''));
+    card(t,t==='付与'?nf(n):signed(n),cnt+'件',t==='付与'?'t-save':(t==='使用'?'t-use':''),t==='付与'?'d-save':(t==='使用'?'d-use':''));
   });
-  card('差し引き',signed(v.tot.net),'',v.tot.net<0?'neg':(v.tot.net>0?'pos':''));
+  card('差し引き',signed(v.tot.net),'付与＋使用＋調整',v.tot.net<0?'neg':(v.tot.net>0?'pos':''));
   var w=el('div','glass card wide'),row=el('div','row');
   [['取引件数',v.tot.count,'件'],['会員',v.tot.people||0,'人']].forEach(function(x){
     var b=el('div'),k=el('div','k',x[0]),val=el('div','v',nf(x[1]));val.appendChild(el('small','',x[2]));b.appendChild(k);b.appendChild(val);row.appendChild(b);});
@@ -363,9 +366,9 @@ function render(){
   var table=$('table');table.textContent='';
   if(!v.rows.length){
     table.appendChild(el('caption','empty','この期間の取引はありません'));
-    $('more').hidden=true;$('csv').disabled=true;$('csv').style.opacity=.5;hint();return;
+    $('more').hidden=true;$('csv').disabled=true;hint();return;
   }
-  $('csv').disabled=false;$('csv').style.opacity=1;
+  $('csv').disabled=false;
   var thead=el('thead'),tr=el('tr');
   v.head.forEach(function(h,i){tr.appendChild(el('th',v.kinds[i]==='l'||v.kinds[i]==='memo'?'l':'',h));});
   thead.appendChild(tr);table.appendChild(thead);
@@ -423,7 +426,17 @@ function openSettings(){
 function rowHours(row){var i=row.querySelectorAll('input');return {open:i[0].value,close:i[1].value};}
 function snap(){return JSON.stringify([].map.call($('srows').children,function(r){return rowHours(r);}));}
 function dirty(){var d=snap()!==S.settingsSnap||!S.settings.saved;var ch=snap()!==S.settingsSnap;
-  $('ssave').disabled=!d;$('scancel').textContent=ch?'キャンセル':'閉じる';}
+  $('ssave').disabled=!d;$('scancel').textContent=ch?'キャンセル':'閉じる';
+  $('sconf').hidden=true;$('ssave').textContent='保存';S.confirming=false;}
+// 切り替え時刻が変わる店を「店 9:30 → 4:00」の形で返す
+function cutChanges(){
+  var before=JSON.parse(S.settingsSnap),out=[];
+  [].forEach.call($('srows').children,function(row,i){
+    var a=boundary(before[i]),b=boundary(rowHours(row));
+    if(a!==b)out.push(row.dataset.store+'　'+fmtMin(a)+' → '+fmtMin(b));
+  });
+  return out;
+}
 function upd(row){
   var h=rowHours(row),ok=h.open&&h.close;
   row.querySelectorAll('label')[1].firstChild.textContent=ok&&toMin(h.close)<=toMin(h.open)?'閉店（翌日）':'閉店';
@@ -434,9 +447,16 @@ function saveSettings(){
   var stores={},bad=false;
   [].forEach.call($('srows').children,function(row){var h=rowHours(row);if(!h.open||!h.close)bad=true;stores[row.dataset.store]=h;});
   if(bad){$('serr').textContent='時刻が空の店舗があります';return;}
+  // 営業日の切り替えが変わるときだけ、1回確認する
+  var ch=cutChanges();
+  if(ch.length&&!S.confirming){
+    var box=$('sconf');box.textContent='';box.appendChild(el('div','','営業日の切り替えが変わります'));
+    ch.forEach(function(t){box.appendChild(el('div','',t));});
+    box.hidden=false;$('ssave').textContent='変更して保存';S.confirming=true;return;
+  }
   $('ssave').disabled=true;$('serr').textContent='';
   call('saveSettings',[stores],function(s){
-    S.settings=s;$('ssave').disabled=false;$('overlay').hidden=true;build();render();
+    S.settings=s;$('ssave').disabled=false;S.confirming=false;$('overlay').hidden=true;build();render();
   },function(e){$('ssave').disabled=false;$('serr').textContent='保存できませんでした：'+(e&&e.message||e);});
 }
 
