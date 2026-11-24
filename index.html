@@ -67,19 +67,26 @@ input[type=date],input[type=time]{font:inherit;color:var(--text);min-height:44px
 /* 表 */
 .tablebox{padding:12px}
 .tabs{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
-.tabs .sp{flex:1}
-.csv{min-height:44px;padding:0 16px;border-radius:11px;background:var(--accent);color:#fff;font-weight:700;font-size:14px;
+.csv{margin-left:auto;min-height:44px;padding:0 16px;border-radius:11px;background:var(--accent);color:#fff;font-weight:700;font-size:14px;
   display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
 .csv:active{background:var(--accentD)}
 .csv:disabled{background:#dfe7f2;color:#3f5474}
 .csv svg{width:18px;height:18px}
 .scroll{overflow:auto;max-height:70vh;border-radius:11px;border:1px solid var(--line);background:var(--card)}
-.hint{font-size:12.5px;font-weight:700;color:var(--accentD);text-align:right;margin:-4px 2px 6px}
+.hint{font-size:12.5px;font-weight:700;color:var(--accentD);white-space:nowrap;margin-left:auto}
+.hint:not([hidden])+.csv{margin-left:0}
 .hint[hidden]{display:none}
 table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:14px}
 th,td{padding:10px 12px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line2);background:var(--card)}
 th{position:sticky;top:0;z-index:2;background:var(--auto);font-size:12.5px;color:var(--sub);font-weight:700;border-bottom:1px solid var(--line)}
 th.l,td.l{text-align:left}
+th{padding:0}
+.thb{display:block;width:100%;min-height:44px;padding:10px 12px;text-align:inherit;font-weight:700;color:var(--sub);white-space:nowrap}
+.thb.on{color:var(--accentD)}
+.thb .ar{font-size:13px;color:#64748b}
+.thb.on .ar{color:var(--accentD)}
+@media (hover:hover){.thb:hover{background:var(--line2)}}
+.thb:active{background:var(--line2)}
 th:first-child,td:first-child{position:sticky;left:0;z-index:1;font-weight:700}
 th:first-child{z-index:3}
 tbody tr:nth-child(even) td{background:#f8fafd}
@@ -121,6 +128,7 @@ tbody tr.total td{font-weight:800;background:var(--accent2);border-top:2px solid
   .range .tilde{display:none}
   .range input{width:100%}
   th,td{padding:9px 10px}
+  .tabs>.chips{flex-basis:100%}
 }
 </style>
 </head>
@@ -160,12 +168,11 @@ tbody tr.total td{font-weight:800;background:var(--accent2);border-top:2px solid
     <section class="glass tablebox">
       <div class="tabs">
         <div class="chips" id="tabs" role="group" aria-label="表の種類"></div>
-        <div class="sp"></div>
+        <div class="hint" id="hint" hidden aria-hidden="true">横にスクロール →</div>
         <button class="csv" id="csv" title="表示中の表をCSVで保存">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"/><path d="m7 11 5 5 5-5"/><path d="M5 20h14"/></svg>CSV
         </button>
       </div>
-      <div class="hint" id="hint" hidden aria-hidden="true">横にスクロール →</div>
       <div class="scroll" id="scroll" tabindex="0" aria-label="集計の表（横にスクロールできます）"><table id="table"></table></div>
       <button class="more" id="more" hidden></button>
     </section>
@@ -177,7 +184,7 @@ tbody tr.total td{font-weight:800;background:var(--accent2);border-top:2px solid
     <h2 id="st">営業時間</h2>
     <p class="note">閉店から次の開店までの真ん中で、営業日を切り替えます。</p>
     <div id="srows"></div>
-    <p class="snote">保存すると、過去の集計にもこの時間が使われます。</p>
+    <p class="snote">保存すると、過去の集計結果も変わる場合があります。</p>
     <div class="sconf" id="sconf" role="alert" hidden></div>
     <div class="err" id="serr" role="alert"></div>
     <div class="actions">
@@ -198,8 +205,10 @@ var KNOWN_TYPES=['付与','使用','調整'];
 var PERIODS=[['today','今日'],['yesterday','昨日'],['week','今週'],['month','今月'],['lastMonth','先月'],['all','全期間'],['custom','期間指定']];
 var TABS=[['day','日別'],['store','店舗別'],['member','会員別'],['detail','明細']];
 var PAGE=300;
+// 表ごとの最初の並び（dir: 1=小さい順、-1=大きい順）
+var SORT_DEFAULT={day:{col:'営業日',dir:-1},store:{col:'店舗',dir:1},member:{col:'件数',dir:-1},detail:{col:'日時',dir:-1}};
 var S={raw:[],recs:[],bad:[],settings:{fallback:{open:'13:00',close:'06:00'},stores:{},saved:false},synced:'',
-       period:'month',from:'',to:'',store:'all',tab:'day',limit:PAGE,view:null};
+       period:'month',from:'',to:'',store:'all',tab:'day',sort:{},limit:PAGE,view:null};
 var $=function(id){return document.getElementById(id);};
 
 /* ---------- 営業日 ---------- */
@@ -305,7 +314,20 @@ function makeView(){
       .map(function(g){return [g.key].concat(sums(g),[g.net,g.count,g.people]);});
     total=['合計'].concat(sums(tot),[tot.net,tot.count,tot.people]);
   }
-  return {head:head,kinds:kinds,rows:rows,total:total,types:types,tot:tot,list:list};
+  // 見出しで並べ替え（合計の行は別なので動かない）。最初の並びは今までどおり。
+  var d=SORT_DEFAULT[tab],st=S.sort[tab]||d,ci=head.indexOf(st.col);
+  if(ci<0){st=d;ci=head.indexOf(d.col);}
+  if(st.col===d.col){if(st.dir!==d.dir)rows.reverse();}
+  else{
+    var isNum=kinds[ci]==='n'||kinds[ci]==='s';
+    rows=rows.map(function(r,i){return [r,i];}).sort(function(a,b){
+      var x=a[0][ci],y=b[0][ci];
+      if(x===''||y==='')return (x===''?1:0)-(y===''?1:0)||a[1]-b[1];   // 空欄は常に下
+      var c=isNum?x-y:String(x).localeCompare(String(y),'ja');
+      return c*st.dir||a[1]-b[1];
+    }).map(function(a){return a[0];});
+  }
+  return {head:head,kinds:kinds,rows:rows,total:total,types:types,tot:tot,list:list,sort:st};
 }
 
 /* ---------- 表示 ---------- */
@@ -370,7 +392,15 @@ function render(){
   }
   $('csv').disabled=false;
   var thead=el('thead'),tr=el('tr');
-  v.head.forEach(function(h,i){tr.appendChild(el('th',v.kinds[i]==='l'||v.kinds[i]==='memo'?'l':'',h));});
+  v.head.forEach(function(h,i){
+    var left=v.kinds[i]==='l'||v.kinds[i]==='memo',th=el('th',left?'l':''),on=v.sort.col===h;
+    var b=el('button','thb'+(on?' on':''),h+' ');b.type='button';b.appendChild(el('span','ar',on?(v.sort.dir<0?'▼':'▲'):'↕'));
+    var num=v.kinds[i]==='n'||v.kinds[i]==='s';
+    b.setAttribute('aria-label',h+'で並べ替え'+(on?(v.sort.dir<0?'（今は大きい順）':'（今は小さい順）'):''));
+    b.onclick=function(){S.sort[S.tab]={col:h,dir:on?-v.sort.dir:(num?-1:1)};S.limit=PAGE;render();};
+    th.setAttribute('aria-sort',on?(v.sort.dir<0?'descending':'ascending'):'none');
+    th.appendChild(b);tr.appendChild(th);
+  });
   thead.appendChild(tr);table.appendChild(thead);
   var tb=el('tbody'),dayKey=S.tab==='day';
   v.rows.slice(0,S.limit).forEach(function(r){
